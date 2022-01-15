@@ -42,10 +42,6 @@ locals {
     if length(split("/", secret)) > 1
   }
 
-  // It seems like a BETA launch stage is still okay for functionality in PREVIEW.
-  //  launch_stage = length(local.volumes) > 0 || local.env_from_secrets_count > 0 ? "BETA" : "BETA"
-  launch_stage = "BETA"
-
   // Ensure backwards-compatibility for the change in VPC access variables.
   vpc_access = {
     connector = coalesce(var.vpc_access.connector, var.vpc_connector_name, "-") == "-" ? null : coalesce(var.vpc_access.connector, var.vpc_connector_name)
