@@ -1,3 +1,4 @@
+
 resource "google_cloud_run_service" "default" {
   provider = google-beta
 
@@ -11,9 +12,10 @@ resource "google_cloud_run_service" "default" {
     labels    = var.labels
     annotations = merge(
       {
-        "run.googleapis.com/ingress"     = var.ingress
-        "run.googleapis.com/client-name" = "terraform"
-        "client.knative.dev/user-image"  = var.image
+        "run.googleapis.com/launch-stage" = local.launch_stage
+        "run.googleapis.com/ingress"      = var.ingress
+        "run.googleapis.com/client-name"  = "terraform"
+        "client.knative.dev/user-image"   = var.image
       },
       length(local.secrets_to_aliases) < 1 ? {} : {
         "run.googleapis.com/secrets" = join(",", [for secret, alias in local.secrets_to_aliases : "${alias}:${secret}"])
@@ -23,10 +25,14 @@ resource "google_cloud_run_service" "default" {
 
   lifecycle {
     ignore_changes = [
-      template[0].metadata[0].annotations,
-      metadata[0].annotations,
-      metadata[0].labels,
-      template[0].spec[0].containers[0].image
+      template[0].metadata[0].annotations["client.knative.dev/user-image"],
+      template[0].metadata[0].annotations["run.googleapis.com/client-name"],
+      template[0].metadata[0].annotations["run.googleapis.com/client-version"],
+      template[0].metadata[0].annotations["run.googleapis.com/sandbox"],
+      metadata[0].annotations["serving.knative.dev/creator"],
+      metadata[0].annotations["serving.knative.dev/lastModifier"],
+      metadata[0].annotations["run.googleapis.com/ingress-status"],
+      metadata[0].labels["cloud.googleapis.com/location"],
     ]
   }
 
